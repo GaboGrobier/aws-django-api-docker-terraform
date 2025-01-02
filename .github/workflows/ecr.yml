@@ -29,16 +29,6 @@ jobs:
           terraform apply -auto-approve
 
 
-      - name: Output ECR Repository URL
-        id: ecr-output
-        run: |
-            cd terraform/ecr_tf
-            echo "ECR Repository URL: $(terraform output -raw ecr_url_web)"
-            echo "::set-output name=ecr_repository_url::$(terraform output -raw ecr_url_web)"
-
-    outputs:
-        ecr_repository_url: ${{ steps.ecr-output.outputs.ecr_repository_url }}
-
   build_docker_and_push_images:
     runs-on: ubuntu-latest
     needs: building_ecr_and_publish_image
@@ -63,7 +53,7 @@ jobs:
         - name: Build, tag, and push image to Amazon ECR
           id: build-image
           env:
-            ECR_REGISTRY: ${{ needs.building_ecr_and_publish_image.outputs.ecr_repository_url }}
+            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
             ECR_REPOSITORY: ecr_web_sencilla  
             IMAGE_TAG: ${{ github.sha }}
           run: |

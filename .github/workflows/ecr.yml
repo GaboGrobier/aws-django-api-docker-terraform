@@ -2,9 +2,9 @@ name: publish ecr
 
 on:
   workflow_run:
-    workflows: ["repository_scan"]
-    types:
-      - completed
+    workflows: ["repository_scan-1"]
+#    types:
+#      - completed
 
 jobs:
   building_ecr_and_publish_image:

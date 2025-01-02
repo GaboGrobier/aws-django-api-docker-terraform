@@ -32,7 +32,8 @@ jobs:
         uses: dflook/terraform-output@v1
         id: ip_publica
         with:
-            path: terraform/build_ec2
+          path: terraform
+          output_name: ec2_public_ip
         
       - name: Guardar la ip 
         run:  echo "IP_PUBLICA=${{ steps.ip_publica.outputs.ip_publica }}" >> $GITHUB_ENV

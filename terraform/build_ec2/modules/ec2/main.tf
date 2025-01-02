@@ -6,6 +6,11 @@ resource "aws_instance" "desafio_tf_instance" {
     tags = {
       Name = "${var.instance_name}"
     }
+     user_data = <<-EOF
+                    #!/bin/bash
+                    mkdir /home/ubuntu/web
+                    EOF
+
     associate_public_ip_address = true
     security_groups = [var.security_groups]
   

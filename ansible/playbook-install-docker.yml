@@ -1,6 +1,6 @@
 ---
 - name: configure docker
-  hosts: docker_host
+  hosts: localhost
   become: true  # Asegura que se usen privilegios de sudo
   tasks:
     - name: update and upgrade

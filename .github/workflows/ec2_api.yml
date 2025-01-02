@@ -75,13 +75,6 @@ jobs:
             echo "${{ secrets.PASSWORD_SERVER }}" > ~/.ssh/id_rsa
             chmod 600 ~/.ssh/id_rsa        
 
-        - name: make web folder 
-          run: |
-              ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{secrets.USER_SERVER}}@${{ env.IP_PUBLICA }} << 'EOF'
-              sudo mkdir -p /home/ubuntu/web
-              sudo chown ubuntu:ubuntu /home/ubuntu/web
-              EOF
-
         - name: Copy files to server
           run: |
             rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./repositorios/api ${{ secrets.USER_SERVER }}@${{ env.IP_PUBLICA }}:/home/ubuntu/web/

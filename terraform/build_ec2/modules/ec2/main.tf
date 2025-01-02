@@ -8,6 +8,11 @@ resource "aws_instance" "desafio_tf_instance" {
     }
      user_data = <<-EOF
                     #!/bin/bash
+                    sudo apt update 
+                    sudo apt upgrade
+                    sudo apt-get install -y docker docker-compose
+                    sudo usermod -aG docker $USER
+                    sudo newgrp docker
                     mkdir /home/ubuntu/web
                     EOF
 

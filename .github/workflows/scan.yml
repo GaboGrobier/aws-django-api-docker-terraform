@@ -20,5 +20,5 @@ jobs:
           run: snyk auth $SNYK_TOKEN
         
         - name: scan IAC ecr buil 
-          run: snyk iac  test terraform/build_ec2 --severity-threshold=high
+          run: snyk iac  test terraform/** --severity-threshold=high
         

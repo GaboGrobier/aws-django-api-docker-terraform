@@ -4,5 +4,5 @@ locals {
   private_subnet="192.168.4.0/24"
   ami = "ami-0e2c8caa4b6378d8c"
   ec2_name = "server_prueba_dflatam"
-  key_name = "desafioLatam"
+  key_name = "prueba2final"
 }

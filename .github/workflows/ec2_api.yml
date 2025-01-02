@@ -33,33 +33,42 @@ jobs:
         id: ip_publica
         with:
           path: terraform
-          output_name: ec2_public_ip
-        
+
       - name: Guardar la ip 
         run:  echo "IP_PUBLICA=${{ steps.ip_publica.outputs.ip_publica }}" >> $GITHUB_ENV
 
 
+  deploy_api_to_ec2:
+    runs-on: ubuntu-latest
+    needs: building_ec2_and_publish_api
+    steps:
+
+        - name: Checkout code
+          uses: actions/checkout@v2
+  
+        - name: mirar ip publica
+          run: | 
+             echo "IP_PUBLICA: ${{ env.IP_PUBLICA }}"
+
+        - name: Add SSH Key
+          run: |
+            mkdir -p ~/.ssh
+            echo "${{ secrets.PASSWORD_SERVER }}" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa        
+
+        - name: Copy files to server
+          run: |
+            rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./repositorios/api ${{ secrets.USER_SERVER }}@${{ env.IP_PUBLICA }}:/home/ubuntu/web/
 
 
-      - name: Add SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.PASSWORD_SERVER }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa        
 
-      - name: Copy files to server
-        run: |
-          rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./repositorios/api ${{ secrets.USER_SERVER }}@${{ env.IP_PUBLICA }}:/home/ubuntu/web/
+        - name: pausa para esperar termino de instalacion Docker y docker-compose
+          run: sleep 35
 
-
-
-      - name: pausa para esperar termino de instalacion Docker y docker-compose
-        run: sleep 35
-
-      - name: SSH commands to deploy
-        run: |
-            ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{secrets.USER_SERVER}}@${{ env.IP_PUBLICA }} << 'EOF'
-            cd /home/ubuntu/web/
-            docker-compose down
-            docker-compose up -d --build
-            EOF
+        - name: SSH commands to deploy
+          run: |
+              ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{secrets.USER_SERVER}}@${{ env.IP_PUBLICA }} << 'EOF'
+              cd /home/ubuntu/web/
+              docker-compose down
+              docker-compose up -d --build
+              EOF

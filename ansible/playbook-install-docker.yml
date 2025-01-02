@@ -1,6 +1,6 @@
 ---
 - name: configure docker
-  hosts: all
+  hosts: localhost
   become: false
   tasks:
     - name: update and upgrade

@@ -78,7 +78,8 @@ jobs:
         - name: make web folder 
           run: |
               ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{secrets.USER_SERVER}}@${{ env.IP_PUBLICA }} << 'EOF'
-              mkdir /home/ubuntu/web
+              sudo mkdir -p /home/ubuntu/web
+              sudo chown ubuntu:ubuntu /home/ubuntu/web
               EOF
 
         - name: Copy files to server

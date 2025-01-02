@@ -19,5 +19,6 @@ jobs:
             SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} 
           run: snyk auth $SNYK_TOKEN
         
-        - name: scan all project
+        - name: scan IAC ecr buil 
           run: snyk iac  test terraform/ --severity-threshold=high
+        

@@ -1,0 +1,85 @@
+name: publish ec2 with api
+
+on:
+  workflow_run:
+    workflows: ["repository_scan"]
+    types:
+      - completed
+
+jobs:
+  building_ec2_and_publish_api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: setup terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.10.3
+
+      - name: Building ecr repository
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          cd terraform/build_ec2
+          terraform init
+          terraform apply -auto-approve
+        
+      - name: obtener ip
+        uses: dflook/terraform-output@v1
+        id: ip_publica
+        with:
+            path: terraform/build_ec2
+        
+      - name: Guardar la ip 
+        run:  echo "IP_PUBLICA=${{ steps.ip_publica.outputs.ip_publica }}" >> $GITHUB_ENV
+
+
+
+  configure_ec2_with_ansible:
+    runs-on: ubuntu-latest
+    needs: building_ec2_and_publish_api
+    steps:
+
+        - name: install ansible 
+          run: |
+            sudo apt update
+            sudo apt install -y ansible
+
+
+
+        - name: Install Docker and Docker Compose
+          run: |
+              ansible-playbook -i "${{ env.IP_PUBLICA }}," --private-key ${{ secrets.AWS_SSH_PRIVATE_KEY }} --user ubuntu ansible/playbook-install-docker.yml
+
+  deploy_api_to_ec2:
+    runs-on: ubuntu-latest
+    needs: configure_ec2_with_ansible
+    steps:
+
+        - name: Add SSH Key
+          run: |
+            mkdir -p ~/.ssh
+            echo "${{ secrets.PASSWORD_SERVER }}" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa        
+
+        - name: make web folder 
+          run: |
+              ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{secrets.USER_SERVER}}@${{ env.IP_PUBLICA }} << 'EOF'
+              mkdir web
+              EOF
+
+        - name: Copy files to server
+          run: |
+            rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./repositorios/api ${{ secrets.USER_SERVER }}@${{ env.IP_PUBLICA }}:/home/ubuntu/web/
+
+        - name: SSH commands to deploy
+          run: |
+              ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{secrets.USER_SERVER}}@${{ env.IP_PUBLICA }} << 'EOF'
+              cd /home/ubuntu/web/
+              docker-compose down
+              docker-compose up -d --build
+              EOF

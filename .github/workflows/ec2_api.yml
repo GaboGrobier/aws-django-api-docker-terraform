@@ -3,7 +3,8 @@ name: publish ec2 with api
 on:
   workflow_run:
     workflows: ["build and publis registry and image"]
-
+    types:
+      - completed
 
 jobs:
   building_ec2_and_publish_api:

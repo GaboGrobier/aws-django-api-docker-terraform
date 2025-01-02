@@ -3,8 +3,8 @@ name: build and publis registry and image
 on:
   workflow_run:
     workflows: ["repository_scan"]
-#    types:
-#      - completed
+    types:
+      - completed
 
 jobs:
   building_ecr_and_publish_image:

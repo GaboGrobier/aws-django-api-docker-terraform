@@ -37,6 +37,12 @@ jobs:
       - name: Guardar la ip 
         run:  echo "IP_PUBLICA=${{ steps.ip_publica.outputs.ip_publica }}" >> $GITHUB_ENV
 
+      - name: mirar ip publica1
+        run: | 
+            echo "Using IP_PUBLICA: ${{ env.IP_PUBLICA }}"
+
+
+
 
   deploy_api_to_ec2:
     runs-on: ubuntu-latest
@@ -48,7 +54,7 @@ jobs:
   
         - name: mirar ip publica
           run: | 
-             echo "IP_PUBLICA: ${{ env.IP_PUBLICA }}"
+             echo "Using IP_PUBLICA: ${{ env.IP_PUBLICA }}"
 
         - name: Add SSH Key
           run: |

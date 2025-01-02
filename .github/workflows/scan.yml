@@ -22,3 +22,4 @@ jobs:
         - name: scan IAC ecr buil 
           run: snyk iac  test terraform/** --severity-threshold=high
         
+

@@ -2,9 +2,8 @@ name: publish ec2 with api
 
 on:
   workflow_run:
-    workflows: ["repository_scan"]
-    types:
-      - completed
+    workflows: ["build and publis registry and image"]
+
 
 jobs:
   building_ec2_and_publish_api:

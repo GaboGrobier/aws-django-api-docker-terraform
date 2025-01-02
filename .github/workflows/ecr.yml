@@ -1,8 +1,8 @@
-name: publish ecr
+name: build and publis registry and image
 
 on:
   workflow_run:
-    workflows: ["repository_scan-1"]
+    workflows: ["repository_scan"]
 #    types:
 #      - completed
 

@@ -1,4 +1,3 @@
-/*comentar*/
 terraform {
   backend "s3" {
     bucket = "bkt-tf-tfstate-gabogrobier-desafiolatam"

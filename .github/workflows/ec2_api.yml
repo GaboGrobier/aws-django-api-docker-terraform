@@ -13,38 +13,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: setup terraform
-        uses: hashicorp/setup-terraform@v2
+      - name: Setup AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          terraform_version: 1.10.3
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Building ecr repository
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+      - name: Download terraform.tfstate from S3
         run: |
-          cd terraform/build_ec2
-          terraform init
-          terraform apply -auto-approve
-        
-      - name: Get EC2 instance ID
-        id: ec2_instance_id
-        run: |
-          INSTANCE_ID=$(terraform output -raw ec2_instance_id)
-          echo "INSTANCE_ID=${INSTANCE_ID}" >> $GITHUB_ENV
-          echo "Instance ID: $INSTANCE_ID"
+          aws s3 cp s3://bkt-tf-tfstate-gabogrobier-desafiolatam/pruebafinal/desafiolatam/terraform.tfstate ./terraform.tfstate
+          echo "Terraform state file downloaded."
 
-      - name: Get EC2 public IP using AWS CLI
-        id: get_ip
+      - name: Extract EC2 public IP from terraform.tfstate
         run: |
-          PUBLIC_IP=$(aws ec2 describe-instances \
-            --instance-ids ${{ env.INSTANCE_ID }} \
-            --query 'Reservations[0].Instances[0].PublicIpAddress' \
-            --output text)
+          PUBLIC_IP=$(jq -r '.resources[] | select(.type=="aws_instance") | .instances[] | .attributes.public_ip' terraform.tfstate)
           echo "PUBLIC_IP=${PUBLIC_IP}" >> $GITHUB_ENV
           echo "Public IP: $PUBLIC_IP"
-  
+
       - name: Show public IP
         run: |
           echo "The public IP of the instance is: ${{ env.PUBLIC_IP }}"
@@ -56,10 +42,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
   
-      - name: mirar ip publica
-        run: |
-          echo "Using IP_PUBLICA: ${{ env.IP_PUBLICA }}"
-
       - name: Add SSH Key
         run: |
           mkdir -p ~/.ssh
@@ -68,14 +50,14 @@ jobs:
 
       - name: Copy files to server
         run: |
-          rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./repositorios/api ${{ secrets.USER_SERVER }}@${{ env.IP_PUBLICA }}:/home/ubuntu/web/
+          rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./repositorios/api ${{ secrets.USER_SERVER }}@${{ env.PUBLIC_IP }}:/home/ubuntu/web/
 
       - name: pausa para esperar termino de instalacion Docker y docker-compose
         run: sleep 35
 
       - name: SSH commands to deploy
         run: |
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{secrets.USER_SERVER}}@${{ env.IP_PUBLICA }} << 'EOF'
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{secrets.USER_SERVER}}@${{ env.PUBLIC_IP }} << 'EOF'
           cd /home/ubuntu/web/
           docker-compose down
           docker-compose up -d --build

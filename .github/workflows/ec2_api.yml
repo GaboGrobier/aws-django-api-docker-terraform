@@ -70,7 +70,7 @@ jobs:
       - name: SSH commands to deploy
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{secrets.USER_SERVER}}@${{ env.PUBLIC_IP }} << 'EOF'
-          cd /home/ubuntu/web/
+          cd /home/ubuntu/web/api
           docker-compose down
           docker-compose up -d --build
           EOF

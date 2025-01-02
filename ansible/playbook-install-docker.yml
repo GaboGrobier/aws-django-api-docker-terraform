@@ -19,8 +19,9 @@
       become: true  # Asegura que esta tarea use sudo
 
     - name: Get Ubuntu release codename from /etc/os-release
-      shell: "source /etc/os-release && echo $UBUNTU_CODENAME"
+      shell: ". /etc/os-release && echo $UBUNTU_CODENAME"  # Usamos el punto (.) en lugar de source
       register: ubuntu_codename
+      become: true  # Asegura que esta tarea use sudo
 
     - name: Add Docker APT repository
       apt_repository:

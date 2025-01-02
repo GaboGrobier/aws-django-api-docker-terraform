@@ -1,10 +1,12 @@
 ---
 - name: configure docker
   hosts: all
-  become: false
+  become: true
   tasks:
-    - name: update and upgrade
-      shell: apt update && upgrade -y 
+    - name: Update apt and upgrade packages
+      apt:
+        update_cache: yes
+        upgrade: dist
 
     - name: Install dependencies
       apt:
@@ -26,15 +28,17 @@
         repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
         state: present
 
-    - name: Install Docker
+    - name: Install Docker CE
       apt:
         name: docker-ce
         state: present
+        update_cache: yes
 
     - name: Install Docker Compose
       shell: |
         curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         chmod +x /usr/local/bin/docker-compose
+      creates: /usr/local/bin/docker-compose
 
     - name: Add user to Docker group
       user:
@@ -47,3 +51,13 @@
         name: docker
         state: started
         enabled: yes
+
+    - name: Verify Docker installation
+      command: docker --version
+      register: docker_version
+      failed_when: docker_version.rc != 0
+
+    - name: Verify Docker Compose installation
+      command: docker-compose --version
+      register: docker_compose_version
+      failed_when: docker_compose_version.rc != 0

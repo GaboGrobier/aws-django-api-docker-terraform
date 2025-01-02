@@ -63,16 +63,6 @@ jobs:
       - name: Copy files to server
         run: |
           rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./repositorios/api ${{ secrets.USER_SERVER }}@${{ env.PUBLIC_IP }}:/home/ubuntu/web/
-          
-      - name: Install Ansible
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ansible
-  
-      - name: Ejecutar Playbook de Ansible para configurar Docker
-        run: |
-          ansible-playbook -i "${{ env.PUBLIC_IP }}, " --private-key ~/.ssh/id_rsa ansible/playbook-install-docker.yml
-
 
       - name: pausa para esperar termino de instalacion Docker y docker-compose
         run: sleep 35

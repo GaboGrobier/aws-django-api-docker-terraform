@@ -54,16 +54,12 @@ jobs:
         - name: Checkout code
           uses: actions/checkout@v2
 
-         
-        - name: Add Inventory File
-          run: echo "[ubuntu_hosts]\n${{ env.IP_PUBLICA }}" > inventory.ini 
-       
-
         - name: Install Docker and Docker Compose
           run: |
             echo "${{ secrets.AWS_SSH_PRIVATE_KEY }}" > private_key.pem
             chmod 600 private_key.pem
-            ansible-playbook -i inventory.ini --private-key private_key.pem --user ubuntu ansible/playbook-install-docker.yml
+            ansible-playbook -i "${{ env.IP_PUBLICA }}, " --private-key private_key.pem --user ubuntu ansible/playbook-install-docker.yml
+
 
   deploy_api_to_ec2:
     runs-on: ubuntu-latest

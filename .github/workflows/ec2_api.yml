@@ -26,6 +26,7 @@ jobs:
         run: |
           cd terraform/build_ec2
           terraform init
+          terraform refresh
           terraform apply -auto-approve
 
 

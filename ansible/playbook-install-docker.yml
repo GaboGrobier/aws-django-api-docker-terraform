@@ -1,7 +1,7 @@
 ---
 - name: configure docker
   hosts: localhost
-  become: false
+  become: true
   tasks:
     - name: update and upgrade
       shell: apt update && upgrade -y 

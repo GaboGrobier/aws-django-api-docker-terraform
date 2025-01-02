@@ -7,56 +7,74 @@
       shell: apt-get update && apt-get upgrade -y  # Usamos apt-get en lugar de apt
       become: true  # Asegura que esta tarea use sudo
     
-    - name: Install dependencies
+    - name: add repository for docker 
+      shell: for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+      become: true
+    
+    - name: Actualizar paquetes y asegurarse de tener las dependencias necesarias
       apt:
+        update_cache: yes
         name:
-          - apt-transport-https
           - ca-certificates
           - curl
-          - gnupg
-          - lsb-release
         state: present
-      become: true  # Asegura que esta tarea use sudo
+      become: true
 
-    - name: Get Ubuntu release codename from /etc/os-release
-      shell: ". /etc/os-release && echo $UBUNTU_CODENAME"  # Usamos el punto (.) en lugar de source
-      register: ubuntu_codename
-      become: true  # Asegura que esta tarea use sudo
+    - name: Crear el directorio para llaves de apt
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+      become: true
 
-    - name: Add Docker’s official GPG key
-      apt_key:
+    - name: Descargar la clave GPG de Docker
+      get_url:
         url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
-      become: true  # Asegura que esta tarea use sudo
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+      become: true
 
-    - name: Add Docker APT repository
+    - name: Asegurarse de que la clave tenga los permisos adecuados
+      file:
+        path: /etc/apt/keyrings/docker.asc
+        mode: '0444'
+      become: true
+
+
+    - name: Add the Docker APT repository
       apt_repository:
-        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ubuntu_codename.stdout }} stable"
+        repo: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
         state: present
-      become: true  # Asegura que esta tarea use sudo
+      become: true
 
-    - name: Install Docker
-      apt:
-        name: docker-ce
-        state: present
-      become: true  # Asegura que esta tarea use sudo
+    - name: update to repositories
+      shell: apt-get update
+      become: true
+    
+    - name: install docker 
+      shell: apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+      become: true 
 
-    - name: Install Docker Compose
-      shell: |
-        curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        chmod +x /usr/local/bin/docker-compose
-      become: true  # Asegura que esta tarea use sudo
+    - name: Download Docker Compose
+      get_url:
+        url: "https://github.com/docker/compose/releases/latest/download/docker-compose-{{ ansible_system }}-{{ ansible_architecture }}"
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+      become: true
+
+    - name: Set executable permissions for Docker Compose
+      file:
+        path: /usr/local/bin/docker-compose
+        mode: '0755'
+      become: true
 
     - name: Add user to Docker group
       user:
-        name: ubuntu
+        name: "{{ ansible_user }}"
         group: docker
         append: yes
-      become: true  # Asegura que esta tarea use sudo
+      become: true
 
-    - name: Start and enable Docker service
-      service:
-        name: docker
-        state: started
-        enabled: yes
-      become: true  # Asegura que esta tarea use sudo
+    - name: Refresh group membership for the user
+      shell: newgrp docker
+      become: true

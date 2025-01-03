@@ -55,9 +55,9 @@ jobs:
           id: build-image
           env:
             ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-            ECR_REPOSITORY: ecr_web_sencilla  # Nombre del repositorio en ECR
-            NAME_IMAGE: web_sencilla          # Nombre de la imagen local
-            IMAGE_TAG: ${{ github.sha }}      # Etiqueta de la imagen
+            ECR_REPOSITORY: ecr_web_sencilla  
+            NAME_IMAGE: web_sencilla         
+            IMAGE_TAG: ${{ github.sha }}     
           run: |
             cd repositorios/web
             docker build -t $NAME_IMAGE:${IMAGE_TAG} .
@@ -76,8 +76,18 @@ jobs:
           run: snyk auth $SNYK_TOKEN
           
         - name: Scan local Docker image
+          env:
+            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+            ECR_REPOSITORY: ecr_web_sencilla  
+            NAME_IMAGE: web_sencilla          
+            IMAGE_TAG: ${{ github.sha }} 
           run: snyk container test $NAME_IMAGE
           
         - name: Scan image in Amazon ECR repository
+          env:
+            ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+            ECR_REPOSITORY: ecr_web_sencilla  
+            NAME_IMAGE: web_sencilla          
+            IMAGE_TAG: ${{ github.sha }} 
           run: snyk container test $ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG}
           

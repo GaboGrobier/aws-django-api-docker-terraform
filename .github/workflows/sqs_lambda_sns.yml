@@ -7,7 +7,7 @@ on:
       - completed
 
 jobs:
-  building_ec2_and_publish_api:
+  building-lambda-sns-sqs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

@@ -5,7 +5,7 @@ on:
       - main
 
 jobs:
-  scan-all-project-with-snyk:
+  scan-all-project-IAC-snyk:
     runs-on: ubuntu-latest
     steps:
         - name: Checkout code
@@ -19,7 +19,7 @@ jobs:
             SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} 
           run: snyk auth $SNYK_TOKEN
         
-        - name: scan IAC ecr buil 
+        - name: scan IAC  code 
           run: snyk iac  test terraform/** --severity-threshold=high
         
 

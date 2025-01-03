@@ -81,7 +81,7 @@ jobs:
             ECR_REPOSITORY: ecr_web_sencilla  
             NAME_IMAGE: web_sencilla          
             IMAGE_TAG: ${{ github.sha }} 
-          run: snyk container test $NAME_IMAGE
+          run: snyk container test $NAME_IMAGE:${IMAGE_TAG}
           
         - name: Scan image in Amazon ECR repository
           env:

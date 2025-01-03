@@ -75,6 +75,17 @@ jobs:
             echo "Docker está listo."
 
 
+      - name: Verificar que Docker Compose esté funcional
+        run: |
+              echo "Comprobando que Docker Compose esté funcional..."
+              ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{ secrets.USER_SERVER }}@${{ env.PUBLIC_IP }} "
+                until sudo docker-compose version &> /dev/null; do
+                  echo 'Docker Compose no está listo. Intentando nuevamente en 5 segundos...'
+                  sleep 5
+                done
+                echo 'Docker Compose está listo para ejecutar.'
+              "
+          
 
       - name: SSH commands to deploy
         run: |

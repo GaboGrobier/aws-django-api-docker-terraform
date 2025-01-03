@@ -76,7 +76,7 @@ jobs:
           run: snyk auth $SNYK_TOKEN
           
         - name: Scan local Docker image
-          run: snyk container test $NAME_IMAGE:${IMAGE_TAG}
+          run: snyk container test $NAME_IMAGE
           
         - name: Scan image in Amazon ECR repository
           run: snyk container test $ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG}

@@ -63,4 +63,16 @@ jobs:
             docker tag $ECR_REPOSITORY:${IMAGE_TAG} $ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG}
             docker push $ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG}
             echo "image=${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}" >> $GITHUB_ENV
-  
+
+        - name: Authenticate Snyk CLI
+          env:
+            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} 
+          run: snyk auth $SNYK_TOKEN
+
+        - name: scan local image 
+          run: snyk container test $ECR_REPOSITORY:${IMAGE_TAG} 
+        
+        - name: scan image repository
+          run: snyk container test $ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG}
+
+        

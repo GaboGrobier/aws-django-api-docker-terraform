@@ -65,8 +65,16 @@ jobs:
         run: |
           rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./repositorios/api ${{ secrets.USER_SERVER }}@${{ env.PUBLIC_IP }}:/home/ubuntu/web/
 
-      - name: pausa para esperar termino de instalacion Docker y docker-compose
-        run: sleep 35
+      - name: Esperar a que Docker esté listo
+        run: |
+            echo "Esperando a que Docker esté listo..."
+            until ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{secrets.USER_SERVER}}@${{ env.PUBLIC_IP }} "docker info" > /dev/null 2>&1; do
+              echo "Esperando a que Docker esté en funcionamiento..."
+              sleep 5
+            done
+            echo "Docker está listo."
+
+            
 
       - name: SSH commands to deploy
         run: |

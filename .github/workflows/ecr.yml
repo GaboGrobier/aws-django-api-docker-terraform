@@ -55,30 +55,29 @@ jobs:
           id: build-image
           env:
             ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-            ECR_REPOSITORY: ecr_web_sencilla
-            NAME_IMAGE: web_sencilla  
-            IMAGE_TAG: ${{ github.sha }}
+            ECR_REPOSITORY: ecr_web_sencilla  # Nombre del repositorio en ECR
+            NAME_IMAGE: web_sencilla          # Nombre de la imagen local
+            IMAGE_TAG: ${{ github.sha }}      # Etiqueta de la imagen
           run: |
             cd repositorios/web
             docker build -t $NAME_IMAGE:${IMAGE_TAG} .
-            docker tag $NAME_IMAGE:${IMAGE_TAG} $ECR_REGISTRY/$NAME_IMAGE:${IMAGE_TAG}
-            docker push $ECR_REGISTRY/$NAME_IMAGE:${IMAGE_TAG}
-            echo "image=${ECR_REGISTRY}/${NAME_IMAGE}:${IMAGE_TAG}" >> $GITHUB_ENV
-            docker images 
-
+            docker tag $NAME_IMAGE:${IMAGE_TAG} $ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG}
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG}
+            echo "image=${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}" >> $GITHUB_ENV
+            docker images
+        
       
-        - name: install snyk
+        - name: Install Snyk CLI
           run: npm install -g snyk
-
+          
         - name: Authenticate Snyk CLI
           env:
-            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }} 
+            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           run: snyk auth $SNYK_TOKEN
-
-        - name: scan local image 
-          run: snyk container test $NAME_IMAGE:${IMAGE_TAG} 
-        
-        - name: scan image repository
-          run: snyk container test $ECR_REGISTRY/$NAME_IMAGE:${IMAGE_TAG}
-
-        
+          
+        - name: Scan local Docker image
+          run: snyk container test $NAME_IMAGE:${IMAGE_TAG}
+          
+        - name: Scan image in Amazon ECR repository
+          run: snyk container test $ECR_REGISTRY/$ECR_REPOSITORY:${IMAGE_TAG}
+          

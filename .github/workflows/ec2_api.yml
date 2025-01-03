@@ -68,13 +68,13 @@ jobs:
       - name: Esperar a que Docker esté listo
         run: |
             echo "Esperando a que Docker esté listo..."
-            until ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{secrets.USER_SERVER}}@${{ env.PUBLIC_IP }} "docker info" > /dev/null 2>&1; do
+            until ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{secrets.USER_SERVER}}@${{ env.PUBLIC_IP }} "sudo docker info" > /dev/null 2>&1; do
               echo "Esperando a que Docker esté en funcionamiento..."
               sleep 5
             done
             echo "Docker está listo."
 
-            
+
 
       - name: SSH commands to deploy
         run: |

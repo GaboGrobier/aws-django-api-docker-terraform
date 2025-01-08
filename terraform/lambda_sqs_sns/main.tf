@@ -1,9 +1,9 @@
-terraform {
+{
   backend "s3" {
-    bucket = "bkt-tf-tfstate-gabogrobier-desafiolatam"
-    key = "pruebafinal/desafiolatam/sqs/terraform.tfstate"
+    bucket = "Cambialo-por-tu-bucket-S3"
+    key = "Cambialo-por-tu-ruta-de-guardado-tfstate"
     region = "us-east-1"
-    dynamodb_table = "db-dynamo-tf-tfstate-gabogrobier-desafiolatam"
+    dynamodb_table = "modifica-coloca-tu-tabla-dynamo"
     encrypt = true
     
   }

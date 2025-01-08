@@ -2,7 +2,7 @@ name: repository_scan
 on: 
  push:
     branches:
-      - main
+      - Cambialo_por_tu_rama
 
 jobs:
   scan-all-project-IAC-snyk:
